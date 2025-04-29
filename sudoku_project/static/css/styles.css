@@ -278,13 +278,16 @@ button:disabled {
     max-width: 450px;
     margin-left: auto;
     margin-right: auto;
-    display: block;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .step-explanation h3 {
     margin: 0 0 10px 0;
     color: #495057;
     font-size: 16px;
+    display: block !important;
 }
 
 .step-explanation p {
@@ -292,4 +295,13 @@ button:disabled {
     color: #212529;
     font-size: 14px;
     line-height: 1.5;
+    display: block !important;
+}
+
+@media (max-width: 500px) {
+    .step-explanation {
+        width: 100%;
+        max-width: none;
+        margin: 20px 10px;
+    }
 } 
