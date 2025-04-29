@@ -1,14 +1,21 @@
 from flask import Flask, render_template, request, jsonify
+import os
+import sys
+
+# Add the root directory to path so we can import the sudoku module
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, root_dir)
+
+# Import our modules
 from sudoku.grid import SudokuGrid
 from sudoku.solver import solve
 from sudoku.generator import generate_easy, generate_medium, generate_hard, generate_expert
-import logging
-import os
 
-app = Flask(__name__)
-logging.basicConfig(level=logging.DEBUG)
+app = Flask(__name__, 
+            template_folder=os.path.join(root_dir, 'templates'),
+            static_folder=os.path.join(root_dir, 'static'))
 
-# Enable CORS for all routes
+# CORS support
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -56,8 +63,6 @@ def solve_puzzle():
     board = data.get('board')
     show_steps = data.get('show_steps', False)
     
-    logging.debug(f"Received solve request with show_steps={show_steps}")
-    
     if not board:
         return jsonify({'error': 'No board provided'}), 400
     
@@ -65,14 +70,12 @@ def solve_puzzle():
         grid = SudokuGrid(board)
         if show_steps:
             success, steps = solve(grid, record_steps=True)
-            logging.debug(f"Solve completed with success={success}, steps count={len(steps) if steps else 0}")
             
             if success:
                 # Format the response with steps and progress information
                 solution_steps = []
                 for i, step in enumerate(steps):
                     explanation = step.get('explanation', 'No explanation')
-                    app.logger.debug(f"Step {i} explanation: {explanation}")
                     
                     solution_steps.append({
                         'board': step['board'],
@@ -84,22 +87,11 @@ def solve_puzzle():
                         'explanation': explanation
                     })
                 
-                if solution_steps:
-                    app.logger.debug(f"First step explanation: {solution_steps[0]['explanation']}")
-                    app.logger.debug(f"Last step explanation: {solution_steps[-1]['explanation']}")
-                
-                response_data = {
+                return jsonify({
                     'solved': True,
                     'board': grid.board,
                     'steps': solution_steps
-                }
-                
-                # Log response size
-                import json
-                response_size = len(json.dumps(response_data))
-                app.logger.debug(f"Response size: {response_size} bytes")
-                
-                return jsonify(response_data)
+                })
             else:
                 return jsonify({
                     'solved': False,
@@ -112,12 +104,9 @@ def solve_puzzle():
                 'board': grid.board if success else None
             })
     except Exception as e:
-        logging.exception("Error solving puzzle")
+        print(f"Error solving puzzle: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-# For Vercel serverless function support
-app.wsgi_app = app.wsgi_app
-
+# For running locally
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', debug=True, port=port) 
+    app.run(debug=True, port=5001) 
