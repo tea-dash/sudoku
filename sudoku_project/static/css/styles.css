@@ -278,6 +278,7 @@ button:disabled {
     max-width: 450px;
     margin-left: auto;
     margin-right: auto;
+    display: block;
 }
 
 .step-explanation h3 {

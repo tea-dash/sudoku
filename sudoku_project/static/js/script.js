@@ -138,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the step
         const step = lastSteps[currentStepIndex];
+        console.log('Current step:', step); // Debug log
         updateBoard(step.board, false);
         
         const [row, col] = step.position;
@@ -145,8 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update explanation
         const explanationText = document.getElementById('current-explanation');
+        console.log('Explanation element:', explanationText); // Debug log
+        console.log('Step explanation:', step.explanation); // Debug log
         if (explanationText && step.explanation) {
             explanationText.textContent = step.explanation;
+            console.log('Updated explanation text to:', explanationText.textContent); // Debug log
         }
     }
     

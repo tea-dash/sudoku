@@ -54,6 +54,7 @@ def solve_puzzle():
                 # Format the response with steps and progress information
                 solution_steps = []
                 for i, step in enumerate(steps):
+                    app.logger.debug(f"Step {i} explanation: {step.get('explanation', 'No explanation')}")  # Debug log
                     solution_steps.append({
                         'board': step['board'],
                         'position': step['position'],
@@ -63,6 +64,7 @@ def solve_puzzle():
                         'progress': step['progress'],
                         'explanation': step.get('explanation', '')
                     })
+                app.logger.debug(f"First step explanation: {solution_steps[0]['explanation']}")  # Debug log
                 return jsonify({
                     'solved': True,
                     'board': grid.board,
