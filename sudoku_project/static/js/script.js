@@ -138,30 +138,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the step
         const step = lastSteps[currentStepIndex];
-        console.log('Current step:', step); // Debug log
         updateBoard(step.board, false);
         
         const [row, col] = step.position;
         highlightCell(row, col, step.value);
         
-        // Update explanation with more debug logging
-        const explanationContainer = document.getElementById('step-explanation');
+        // Update explanation
         const explanationText = document.getElementById('current-explanation');
-        console.log('Explanation container:', explanationContainer); // Debug log
-        console.log('Explanation element:', explanationText); // Debug log
-        console.log('Step explanation:', step.explanation); // Debug log
-        
-        if (explanationContainer) {
-            console.log('Explanation container style:', window.getComputedStyle(explanationContainer)); // Debug log
-            explanationContainer.style.display = 'block';
-            explanationContainer.style.visibility = 'visible';
-            explanationContainer.style.opacity = '1';
-        }
-        
         if (explanationText && step.explanation) {
             explanationText.textContent = step.explanation;
-            console.log('Updated explanation text to:', explanationText.textContent); // Debug log
-            console.log('Explanation text style:', window.getComputedStyle(explanationText)); // Debug log
         }
     }
     

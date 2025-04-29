@@ -19,10 +19,14 @@ def solve(grid: SudokuGrid, record_steps=False) -> bool:
     
     def get_explanation(r: int, c: int, val: int, candidates: list) -> str:
         """Generate a clear explanation for the current solving step"""
+        row_num = r + 1
+        col_num = c + 1
+        
         if len(candidates) == 1:
-            return f"Cell (row {r+1}, column {c+1}) can only be {val} - it's the only valid option."
+            return f"Cell at row {row_num}, column {col_num} can only be {val}. This is the only valid number that doesn't conflict with other cells in the same row, column, or 3x3 box."
         else:
-            return f"Trying {val} in cell (row {r+1}, column {c+1}). Possible values: {candidates}"
+            candidates_str = ', '.join(map(str, sorted(candidates)))
+            return f"Placing {val} in cell at row {row_num}, column {col_num}. This cell could be any of these numbers: {candidates_str}. Trying {val} first and will backtrack if it doesn't lead to a solution."
     
     # Helper function to capture solving process
     def solve_with_steps(grid, current_path=None):
