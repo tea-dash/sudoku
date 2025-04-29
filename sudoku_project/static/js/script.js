@@ -97,8 +97,15 @@ document.addEventListener('DOMContentLoaded', function() {
         prevStepBtn.disabled = true;
         nextStepBtn.disabled = lastSteps === null || lastSteps.length === 0;
         
-        // Hide controls if no steps
-        stepControls.style.display = lastSteps && lastSteps.length > 0 ? 'block' : 'none';
+        // Show controls and explanation if we have steps
+        const hasSteps = lastSteps && lastSteps.length > 0;
+        stepControls.style.display = hasSteps ? 'block' : 'none';
+        
+        // Make sure explanation is also visible when we have steps
+        const explanationContainer = document.getElementById('step-explanation');
+        if (explanationContainer) {
+            explanationContainer.style.display = hasSteps ? 'block' : 'none';
+        }
         
         // Make sure play is shown, pause is hidden
         playBtn.style.display = 'inline-block';
@@ -138,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the step
         const step = lastSteps[currentStepIndex];
+        console.log('Current step data:', step); // Debug log
         updateBoard(step.board, false);
         
         const [row, col] = step.position;
@@ -145,8 +153,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update explanation
         const explanationText = document.getElementById('current-explanation');
-        if (explanationText && step.explanation) {
-            explanationText.textContent = step.explanation;
+        console.log('Explanation element found:', !!explanationText); // Debug log
+        console.log('Step has explanation:', !!step.explanation); // Debug log
+        if (explanationText) {
+            if (step.explanation) {
+                console.log('Setting explanation to:', step.explanation); // Debug log
+                explanationText.textContent = step.explanation;
+            } else {
+                console.log('No explanation available for this step'); // Debug log
+                explanationText.textContent = 'No detailed explanation available for this step.';
+            }
         }
     }
     
@@ -289,6 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Always use visualization regardless of whether we have a solution
         const boardState = currentPuzzle || getBoardState();
         
+        // Reset explanation text to default
+        const explanationText = document.getElementById('current-explanation');
+        if (explanationText) {
+            explanationText.textContent = 'Solving puzzle...';
+        }
+        
         fetch('/solve', {
             method: 'POST',
             headers: {
@@ -308,14 +330,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Just show the final solution
                     updateBoard(data.board, false);
+                    
+                    // Update explanation when no steps available
+                    if (explanationText) {
+                        explanationText.textContent = 'Solution found but no steps to visualize';
+                    }
+                    
                     alert('Solution found but no steps to visualize');
                 }
             } else {
+                // Update explanation for no solution
+                if (explanationText) {
+                    explanationText.textContent = 'No solution exists for this puzzle.';
+                }
+                
                 alert('No solution found for this puzzle!');
             }
         })
         .catch(error => {
             console.error('Error solving puzzle:', error);
+            
+            // Update explanation on error
+            if (explanationText) {
+                explanationText.textContent = 'Error occurred while solving the puzzle.';
+            }
+            
             alert('Error solving puzzle. Please try again.');
         });
     });

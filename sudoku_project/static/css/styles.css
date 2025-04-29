@@ -272,27 +272,29 @@ button:disabled {
 .step-explanation {
     margin-top: 20px;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: #e6f7ff;
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 2px solid #1890ff;
     width: 100%;
     max-width: 450px;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .step-explanation h3 {
     margin: 0 0 10px 0;
-    color: #333;
-    font-size: 16px;
+    color: #0066cc;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .step-explanation p {
     margin: 0;
-    color: #666;
-    font-size: 14px;
-    line-height: 1.4;
+    color: #333;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 @media (max-width: 500px) {
