@@ -1,72 +1,78 @@
 # Vercel Deployment Guide for Sudoku App
 
-This guide will help you deploy your Sudoku application on Vercel.
+This guide explains how to deploy the Sudoku Generator & Solver application to Vercel.
 
-## Deployment Method 1: Using Vercel Dashboard (Recommended for First-Time Setup)
+## Prerequisites
 
-1. Go to [Vercel's website](https://vercel.com) and sign up/login (you can use your GitHub account)
+- A GitHub account
+- A Vercel account (you can sign up at [vercel.com](https://vercel.com) using your GitHub account)
+
+## Deployment Steps
+
+### 1. Push to GitHub (Already Done)
+
+Your code has been pushed to GitHub with all the necessary Vercel configuration files:
+- `vercel.json` - Configures build settings and routing
+- `api/server.py` - Main Flask application
+- `api/index.py` - Serverless function entry point
+
+### 2. Deploy to Vercel
+
+1. Go to [vercel.com](https://vercel.com) and log in with your GitHub account
 2. Click on "Add New..." > "Project"
-3. Import your GitHub repository (grant Vercel access to your repository if needed)
-4. Configure your project:
-   - Framework Preset: Other
-   - Root Directory: `./` (leave as is)
-   - Build Command: Leave empty (or use `pip install -r requirements.txt` if needed)
-   - Output Directory: Leave empty
-   - Install Command: `pip install -r requirements.txt`
-5. Click "Deploy"
+3. Select your GitHub repository
+4. Vercel should automatically detect that this is a Python project
+5. Configure your project:
+   - **Framework Preset**: Other
+   - **Root Directory**: ./
+   - **Build Command**: Leave empty (or `python -m pip install -r requirements.txt`)
+   - **Output Directory**: Leave empty
+   - **Install Command**: `pip install -r requirements.txt`
+6. Click "Deploy"
 
-Vercel will automatically detect your `vercel.json` configuration and deploy your application.
+### 3. Environment Variables
 
-## Deployment Method 2: Using Vercel CLI
+If needed, you can add environment variables in the Vercel project settings.
 
-If you prefer using the command line:
+### 4. Custom Domain (Optional)
 
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
+Once deployed, you can add a custom domain in the Vercel project settings.
 
-2. Login to Vercel:
-```bash
-vercel login
-```
+## Troubleshooting
 
-3. Deploy the project (run this from your project root):
-```bash
-vercel
-```
+If your deployment fails:
 
-4. Follow the prompts:
-   - Set up and deploy? Yes
-   - Which scope? (Select your account)
-   - Link to existing project? (Select No for first time, Yes for updates)
-   - What's your project name? sudoku
-   - In which directory is your code located? ./
-   - Want to override settings? No
+1. Check the Vercel deployment logs for specific errors
+2. Verify the Python version is 3.9 in the Vercel settings
+3. Make sure all dependencies are in `requirements.txt`
+4. Ensure `vercel.json` is properly configured
+5. Try a manual deployment using the Vercel CLI:
+   ```
+   npm install -g vercel
+   vercel login
+   vercel --prod
+   ```
 
 ## Updating Your Deployment
 
 After making changes to your code:
 
-1. Commit and push your changes to GitHub:
+1. Push changes to GitHub
+2. Vercel will automatically rebuild and deploy your application
+
+## Local Development
+
+To run the app locally:
+
 ```bash
-git add .
-git commit -m "Your update message"
-git push
+python api/server.py
 ```
 
-2. If you've set up GitHub integration, Vercel will automatically redeploy your application.
+Or if using the Vercel CLI:
 
-3. Alternatively, redeploy manually:
 ```bash
-vercel --prod
+vercel dev
 ```
-
-## Troubleshooting
-
-- **Import Error**: Make sure your directory structure is correct and all Python modules can be imported
-- **Dependencies Issue**: Verify your `requirements.txt` file includes all necessary packages
-- **Routing Problem**: Check the `vercel.json` configuration to ensure all routes are correctly defined
 
 ## Production URL
 

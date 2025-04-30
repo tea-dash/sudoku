@@ -1,19 +1,58 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import sys
+import importlib.util
 
-# Add the root directory to path so we can import the sudoku module
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Ensure we're in the right directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+
+# Add the root and api directories to Python path
 sys.path.insert(0, root_dir)
+sys.path.insert(0, current_dir)
 
-# Import our modules
-from sudoku.grid import SudokuGrid
-from sudoku.solver import solve
-from sudoku.generator import generate_easy, generate_medium, generate_hard, generate_expert
+# Function to check if a module exists
+def module_exists(module_name):
+    try:
+        importlib.util.find_spec(module_name)
+        return True
+    except ImportError:
+        return False
 
-app = Flask(__name__, 
-            template_folder=os.path.join(root_dir, 'templates'),
-            static_folder=os.path.join(root_dir, 'static'))
+# First try to import from the local directory
+if module_exists("sudoku.grid"):
+    from sudoku.grid import SudokuGrid
+    from sudoku.solver import solve
+    from sudoku.generator import generate_easy, generate_medium, generate_hard, generate_expert
+# Then try from the root directory
+elif module_exists("api.sudoku.grid"):
+    from api.sudoku.grid import SudokuGrid
+    from api.sudoku.solver import solve
+    from api.sudoku.generator import generate_easy, generate_medium, generate_hard, generate_expert
+else:
+    raise ImportError("Could not find the sudoku module.")
+
+app = Flask(__name__)
+
+# Configure static and template folders
+template_dir = os.path.join(root_dir, 'templates')
+static_dir = os.path.join(root_dir, 'static')
+
+if os.path.exists(template_dir):
+    app.template_folder = template_dir
+else:
+    # Try the api subdirectory
+    template_dir = os.path.join(current_dir, 'templates')
+    if os.path.exists(template_dir):
+        app.template_folder = template_dir
+
+if os.path.exists(static_dir):
+    app.static_folder = static_dir
+else:
+    # Try the api subdirectory
+    static_dir = os.path.join(current_dir, 'static')
+    if os.path.exists(static_dir):
+        app.static_folder = static_dir
 
 # CORS support
 @app.after_request
@@ -107,6 +146,10 @@ def solve_puzzle():
         print(f"Error solving puzzle: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-# For running locally
+# Vercel requires a direct export
+app.debug = False
+
+# For local testing
 if __name__ == '__main__':
-    app.run(debug=True, port=5001) 
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', debug=True, port=port) 

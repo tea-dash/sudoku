@@ -1,0 +1,13 @@
+{
+  "name": "sudoku-solver",
+  "version": "1.0.0",
+  "description": "Sudoku puzzle generator and solver with visualization",
+  "scripts": {
+    "start": "vercel dev",
+    "build": "echo 'No build required'",
+    "deploy": "vercel deploy --prod"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 
