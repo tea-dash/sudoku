@@ -9,10 +9,24 @@ def solve(grid: SudokuGrid, record_steps=False) -> bool:
     The grid is modified in place.
     
     If record_steps is True, returns (success, steps) where steps is a list of
-    board states and positions filled during solving.
+    moves that lead to the solution.
     """
     steps = [] if record_steps else None
     solution_path = [] if record_steps else None
+    empty_cells = [(r, c) for r in range(9) for c in range(9) if grid.board[r][c] == 0]
+    total_empty = len(empty_cells)
+    cells_filled = [0]  # Use list to allow modification in inner function
+    
+    def get_explanation(r: int, c: int, val: int, candidates: list) -> str:
+        """Generate a clear explanation for the current solving step"""
+        row_num = r + 1
+        col_num = c + 1
+        
+        if len(candidates) == 1:
+            return f"Cell at row {row_num}, column {col_num} can only be {val}. This is the only valid number that doesn't conflict with other cells in the same row, column, or 3x3 box."
+        else:
+            candidates_str = ', '.join(map(str, sorted(candidates)))
+            return f"Placing {val} in cell at row {row_num}, column {col_num}. This cell could be any of these numbers: {candidates_str}. Trying {val} first and will backtrack if it doesn't lead to a solution."
     
     # Helper function to capture solving process
     def solve_with_steps(grid, current_path=None):
@@ -43,14 +57,15 @@ def solve(grid: SudokuGrid, record_steps=False) -> bool:
         random.shuffle(candidates)
         for val in candidates:
             grid.place(r, c, val)
+            cells_filled[0] += 1
             
             # Create a step record but don't save it yet - only if it leads to a solution
             if record_steps:
-                board_copy = [row[:] for row in grid.board]
                 step = {
-                    'board': board_copy,
                     'position': (r, c),
-                    'value': val
+                    'value': val,
+                    'progress': round(cells_filled[0] / total_empty * 100, 1),
+                    'explanation': get_explanation(r, c, val, candidates)
                 }
                 current_path.append(step)
                 
@@ -59,6 +74,7 @@ def solve(grid: SudokuGrid, record_steps=False) -> bool:
                 
             # Backtrack if solution not found
             grid.remove(r, c, val)
+            cells_filled[0] -= 1
             
             # Remove this step from the current path if it didn't lead to a solution
             if record_steps and current_path:
@@ -69,9 +85,24 @@ def solve(grid: SudokuGrid, record_steps=False) -> bool:
     # Call the helper function
     result = solve_with_steps(grid)
     
+    if record_steps and solution_path:
+        # Reconstruct the board states for the solution path
+        board_states = []
+        current_board = [row[:] for row in grid.board]  # Start with the solved board
+        # Work backwards to create the sequence of board states
+        for i in range(len(solution_path) - 1, -1, -1):
+            step = solution_path[i]
+            r, c = step['position']
+            current_board[r][c] = 0  # Remove the number to get the previous state
+            # Add the board state to the beginning of our list
+            board_states.insert(0, [row[:] for row in current_board])
+        
+        # Update the solution path with board states
+        for i, step in enumerate(solution_path):
+            step['board'] = board_states[i]
+    
     # Return appropriate result based on whether steps were requested
     if record_steps:
-        # Now we have only the steps that led to the solution
         return result, solution_path
     else:
         return result
