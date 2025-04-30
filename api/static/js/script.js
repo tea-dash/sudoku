@@ -261,9 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/generate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({ difficulty: difficulty })
+            body: `difficulty=${difficulty}`
         })
         .then(response => {
             if (!response.ok) {
@@ -295,8 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
     solveBtn.addEventListener('click', function() {
         if (isSolving) return;
         
-        // Always use visualization regardless of whether we have a solution
-        const boardState = currentPuzzle || getBoardState();
+        isSolving = true;
+        // Always use current board state
+        const boardState = getBoardState();
+        
+        // Show bear spinner
+        bearSpinner.style.display = 'flex';
         
         // Reset explanation text to default
         const explanationText = document.getElementById('current-explanation');
@@ -328,8 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (explanationText) {
                         explanationText.textContent = 'Solution found but no steps to visualize';
                     }
-                    
-                    alert('Solution found but no steps to visualize');
                 }
             } else {
                 // Update explanation for no solution
@@ -337,8 +339,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     explanationText.textContent = 'No solution exists for this puzzle.';
                 }
                 
-                alert('No solution found for this puzzle!');
+                alert('Unable to solve. Make sure the puzzle is valid.');
             }
+            
+            // Hide spinner
+            bearSpinner.style.display = 'none';
+            isSolving = false;
         })
         .catch(error => {
             console.error('Error solving puzzle:', error);
@@ -348,7 +354,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 explanationText.textContent = 'Error occurred while solving the puzzle.';
             }
             
-            alert('Error solving puzzle. Please try again.');
+            alert('Failed to solve puzzle. Please try again.');
+            
+            // Hide spinner
+            bearSpinner.style.display = 'none';
+            isSolving = false;
         });
     });
     

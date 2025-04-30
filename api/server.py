@@ -69,9 +69,18 @@ def index():
 @app.route('/generate', methods=['GET', 'POST'])
 def generate():
     """Generate a new Sudoku puzzle"""
+    difficulty = 'medium'  # Default difficulty
+    
     if request.method == 'POST':
-        difficulty = request.get_json().get('difficulty', 'medium')
+        # Handle both application/json and form-urlencoded content types
+        if request.content_type and 'application/json' in request.content_type:
+            data = request.get_json()
+            difficulty = data.get('difficulty', 'medium') if data else 'medium'
+        else:
+            # Handle form data or urlencoded data
+            difficulty = request.form.get('difficulty', 'medium')
     else:
+        # Handle GET requests
         difficulty = request.args.get('difficulty', 'medium')
     
     # Map difficulty to the appropriate generator function
