@@ -97,8 +97,15 @@ document.addEventListener('DOMContentLoaded', function() {
         prevStepBtn.disabled = true;
         nextStepBtn.disabled = lastSteps === null || lastSteps.length === 0;
         
-        // Hide controls if no steps
-        stepControls.style.display = lastSteps && lastSteps.length > 0 ? 'block' : 'none';
+        // Show controls and explanation if we have steps
+        const hasSteps = lastSteps && lastSteps.length > 0;
+        stepControls.style.display = hasSteps ? 'block' : 'none';
+        
+        // Make sure explanation is also visible when we have steps
+        const explanationContainer = document.getElementById('step-explanation');
+        if (explanationContainer) {
+            explanationContainer.style.display = hasSteps ? 'block' : 'none';
+        }
         
         // Make sure play is shown, pause is hidden
         playBtn.style.display = 'inline-block';
@@ -142,6 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const [row, col] = step.position;
         highlightCell(row, col, step.value, step.backtrack);
+        
+        // Update explanation
+        const explanationText = document.getElementById('current-explanation');
+        if (explanationText && step.explanation) {
+            explanationText.textContent = step.explanation;
+        } else if (explanationText) {
+            explanationText.textContent = 'No detailed explanation available for this step.';
+        }
     }
     
     // Previous step button
@@ -248,22 +263,23 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `difficulty=${difficulty}`
+            body: `difficulty=${difficulty}`,
         })
         .then(response => response.json())
         .then(data => {
             currentPuzzle = data.puzzle;
             currentSolution = data.solution;
-            updateBoard(currentPuzzle, true);
             
-            // Hide bear spinner
+            updateBoard(currentPuzzle);
+            
+            // Hide spinner
             bearSpinner.style.display = 'none';
         })
         .catch(error => {
             console.error('Error generating puzzle:', error);
-            alert('Error generating puzzle. Please try again.');
+            alert('Failed to generate puzzle. Please try again.');
             
-            // Hide bear spinner on error
+            // Hide spinner
             bearSpinner.style.display = 'none';
         });
     });
@@ -272,51 +288,58 @@ document.addEventListener('DOMContentLoaded', function() {
     solveBtn.addEventListener('click', function() {
         if (isSolving) return;
         
-        // Always use visualization regardless of whether we have a solution
-        const boardState = currentPuzzle || getBoardState();
+        isSolving = true;
+        const boardState = getBoardState();
+        
+        // Show bear spinner
+        bearSpinner.style.display = 'flex';
         
         fetch('/solve', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 board: boardState,
                 show_steps: true
-            })
+            }),
         })
         .then(response => response.json())
         .then(data => {
             if (data.solved) {
                 if (data.steps && data.steps.length > 0) {
-                    // Animate the solution steps
                     animateSolvingSteps(data.steps);
                 } else {
-                    // Just show the final solution
                     updateBoard(data.board, false);
-                    alert('Solution found but no steps to visualize');
                 }
             } else {
-                alert('No solution found for this puzzle!');
+                alert('Unable to solve. Make sure the puzzle is valid.');
             }
+            
+            // Hide spinner
+            bearSpinner.style.display = 'none';
+            isSolving = false;
         })
         .catch(error => {
             console.error('Error solving puzzle:', error);
-            alert('Error solving puzzle. Please try again.');
+            alert('Failed to solve puzzle. Please try again.');
+            
+            // Hide spinner
+            bearSpinner.style.display = 'none';
+            isSolving = false;
         });
     });
     
-    // Reset to original puzzle or empty board
+    // Reset to original state
     resetBtn.addEventListener('click', function() {
         if (originalState) {
-            updateBoard(originalState, true);
+            updateBoard(originalState);
             
-            // Hide step controls
+            // Hide step controls when resetting
             stepControls.style.display = 'none';
-            
-            // Stop any ongoing animation
-            pauseAnimation();
+            lastSteps = null;
         } else {
+            // If no original state, just clear the board
             initializeBoard();
         }
     });

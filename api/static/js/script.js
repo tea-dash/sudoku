@@ -145,24 +145,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the step
         const step = lastSteps[currentStepIndex];
-        console.log('Current step data:', step); // Debug log
         updateBoard(step.board, false);
         
         const [row, col] = step.position;
-        highlightCell(row, col, step.value);
+        highlightCell(row, col, step.value, step.backtrack);
         
         // Update explanation
         const explanationText = document.getElementById('current-explanation');
-        console.log('Explanation element found:', !!explanationText); // Debug log
-        console.log('Step has explanation:', !!step.explanation); // Debug log
-        if (explanationText) {
-            if (step.explanation) {
-                console.log('Setting explanation to:', step.explanation); // Debug log
-                explanationText.textContent = step.explanation;
-            } else {
-                console.log('No explanation available for this step'); // Debug log
-                explanationText.textContent = 'No detailed explanation available for this step.';
-            }
+        if (explanationText && step.explanation) {
+            explanationText.textContent = step.explanation;
+        } else if (explanationText) {
+            explanationText.textContent = 'No detailed explanation available for this step.';
         }
     }
     

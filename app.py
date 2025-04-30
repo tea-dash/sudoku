@@ -45,8 +45,22 @@ def solve_puzzle():
         solved, steps = solve(grid, record_steps=True)
         app.logger.debug(f"Solver returned {len(steps)} steps")
         
-        # Ensure steps have the right format
-        for step in steps[:3]:  # Log first few steps for debugging
+        # Ensure each step has an explanation
+        for i, step in enumerate(steps):
+            if 'explanation' not in step:
+                # Add a default explanation if none provided
+                if i == 0:
+                    step['explanation'] = "Starting to solve the puzzle."
+                else:
+                    prev_step = steps[i-1]
+                    step['explanation'] = f"Placed {step['value']} at position ({step['position'][0]+1}, {step['position'][1]+1})."
+            
+            # Add backtrack information to the step if not present
+            if 'backtrack' not in step:
+                step['backtrack'] = False
+        
+        # Log the first few steps for debugging
+        for step in steps[:3]:
             app.logger.debug(f"Step: {step.keys()}")
         
         return jsonify({

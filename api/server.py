@@ -114,7 +114,17 @@ def solve_puzzle():
                 # Format the response with steps and progress information
                 solution_steps = []
                 for i, step in enumerate(steps):
-                    explanation = step.get('explanation', 'No explanation')
+                    # Ensure there's an explanation
+                    if 'explanation' not in step:
+                        if i == 0:
+                            explanation = "Starting to solve the puzzle."
+                        else:
+                            explanation = f"Placed {step['value']} at position ({step['position'][0]+1}, {step['position'][1]+1})."
+                    else:
+                        explanation = step.get('explanation', 'No explanation')
+                    
+                    # Ensure there's backtrack information
+                    backtrack = step.get('backtrack', False)
                     
                     solution_steps.append({
                         'board': step['board'],
@@ -123,7 +133,8 @@ def solve_puzzle():
                         'step_number': i + 1,
                         'total_steps': len(steps),
                         'progress': step['progress'],
-                        'explanation': explanation
+                        'explanation': explanation,
+                        'backtrack': backtrack
                     })
                 
                 return jsonify({
