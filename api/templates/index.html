@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Generator & Solver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sudoku Generator & Solver</h1>
+        
+        <div class="controls">
+            <div class="generate-section">
+                <h2>Generate New Puzzle</h2>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                    <option value="expert">Expert</option>
+                </select>
+                <button id="generate-btn">Generate</button>
+            </div>
+            
+            <div class="solve-section">
+                <button id="solve-btn">Solve</button>
+                <button id="reset-btn">Reset</button>
+            </div>
+        </div>
+        
+        <div class="board-container">
+            <div id="sudoku-board" class="board"></div>
+            
+            <!-- Cat spinner for loading -->
+            <div id="bear-spinner" class="bear-spinner-container">
+                <div class="bear-spinner">🐈</div>
+                <div style="margin-top: 20px; font-weight: bold;">Generating puzzle...</div>
+            </div>
+            
+            <!-- Step navigation controls (initially hidden) -->
+            <div id="step-controls" style="display: none; margin-top: 15px;">
+                <div class="step-buttons">
+                    <button id="prev-step-btn" class="nav-btn">← Previous</button>
+                    <span id="step-counter">Step 0 of 0</span>
+                    <button id="next-step-btn" class="nav-btn">Next →</button>
+                </div>
+                <div class="play-controls">
+                    <button id="play-btn" class="nav-btn">▶ Play</button>
+                    <button id="pause-btn" class="nav-btn" style="display: none;">⏸ Pause</button>
+                </div>
+                <!-- Add explanation display -->
+                <div id="step-explanation" class="step-explanation">
+                    <h3>Solving Strategy:</h3>
+                    <p id="current-explanation">Click 'Solve' to start solving the puzzle</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/debug.js') }}"></script>
+</body>
+</html> 
