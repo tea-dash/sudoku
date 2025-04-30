@@ -15,19 +15,34 @@ def index():
 def generate_puzzle():
     difficulty = request.form.get('difficulty', 'medium')
     
-    if difficulty == 'easy':
-        grid, solution = generate_easy()
-    elif difficulty == 'medium':
-        grid, solution = generate_medium()
-    elif difficulty == 'hard':
-        grid, solution = generate_hard()
-    else:  # expert
-        grid, solution = generate_expert()
-    
-    return jsonify({
-        'puzzle': [row[:] for row in grid.board],
-        'solution': [row[:] for row in solution.board]
-    })
+    try:
+        if difficulty == 'easy':
+            grid, solution = generate_easy()
+        elif difficulty == 'medium':
+            grid, solution = generate_medium()
+        elif difficulty == 'hard':
+            grid, solution = generate_hard()
+        else:  # expert
+            try:
+                grid, solution = generate_expert()
+            except Exception as e:
+                app.logger.error(f"Expert generation failed: {str(e)}, falling back to hard")
+                grid, solution = generate_hard()
+                return jsonify({
+                    'puzzle': [row[:] for row in grid.board],
+                    'solution': [row[:] for row in solution.board],
+                    'difficulty': 'hard',
+                    'message': 'Expert generation failed, using hard instead'
+                })
+        
+        return jsonify({
+            'puzzle': [row[:] for row in grid.board],
+            'solution': [row[:] for row in solution.board],
+            'difficulty': difficulty
+        })
+    except Exception as e:
+        app.logger.error(f"Error generating puzzle: {str(e)}")
+        return jsonify({'error': 'Failed to generate puzzle'}), 500
 
 @app.route('/solve', methods=['POST'])
 def solve_puzzle():

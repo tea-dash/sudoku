@@ -91,14 +91,36 @@ def generate():
         'expert': generate_expert
     }
     
+    # If expert difficulty is too hard for the server, automatically
+    # fall back to hard difficulty
     generator_func = generator_map.get(difficulty, generate_medium)
-    puzzle_grid, solution_grid = generator_func()  # Get both puzzle and solution
     
-    return jsonify({
-        'puzzle': puzzle_grid.board,
-        'solution': solution_grid.board,
-        'difficulty': difficulty
-    })
+    try:
+        puzzle_grid, solution_grid = generator_func()  # Get both puzzle and solution
+        
+        return jsonify({
+            'puzzle': puzzle_grid.board,
+            'solution': solution_grid.board,
+            'difficulty': difficulty
+        })
+    except Exception as e:
+        print(f"Error generating puzzle: {str(e)}")
+        # Fall back to hard difficulty if expert fails
+        if difficulty == 'expert':
+            try:
+                print("Expert generation failed, falling back to hard difficulty")
+                puzzle_grid, solution_grid = generate_hard()
+                return jsonify({
+                    'puzzle': puzzle_grid.board,
+                    'solution': solution_grid.board,
+                    'difficulty': 'hard',
+                    'message': 'Expert generation failed, falling back to hard difficulty'
+                })
+            except Exception as e2:
+                print(f"Fallback generation also failed: {str(e2)}")
+                return jsonify({'error': 'Failed to generate puzzle'}), 500
+        else:
+            return jsonify({'error': 'Failed to generate puzzle'}), 500
 
 @app.route('/solve', methods=['POST', 'OPTIONS'])
 def solve_puzzle():

@@ -1,8 +1,9 @@
 import random
+import time
 from sudoku.grid import SudokuGrid
 from sudoku.solver import solve, count_solutions
 
-def generate(clues=30, min_clues=17):
+def generate(clues=30, min_clues=17, timeout=10):
     """
     Generate a Sudoku puzzle with the specified number of clues.
     The puzzle is guaranteed to have a unique solution.
@@ -10,12 +11,15 @@ def generate(clues=30, min_clues=17):
     Args:
         clues: Target number of clues to keep (default: 30)
         min_clues: Minimum number of clues (default: 17, theoretical minimum)
+        timeout: Maximum time in seconds to spend generating (default: 10)
     
     Returns:
         tuple: (puzzle_grid, solution_grid)
     """
     # Ensure clues is within valid range
     clues = max(min_clues, min(clues, 81))
+    
+    start_time = time.time()
     
     # Start with an empty grid
     grid = SudokuGrid()
@@ -48,6 +52,12 @@ def generate(clues=30, min_clues=17):
     random.shuffle(cells)
     
     for r, c in cells:
+        # Check timeout - if we're taking too long, return what we have
+        if time.time() - start_time > timeout:
+            # We've exceeded our timeout, return current state
+            print(f"Generation timed out after {timeout} seconds. Returning puzzle with {sum(1 for i in range(9) for j in range(9) if grid.board[i][j] != 0)} clues.")
+            return grid, solution
+            
         # Skip if we've reached the target number of clues
         if sum(1 for i in range(9) for j in range(9) if grid.board[i][j] != 0) <= clues:
             break
@@ -75,6 +85,7 @@ def generate_hard(clues=25):
     """Generate a hard puzzle with fewer clues."""
     return generate(clues=clues)
 
-def generate_expert(clues=20):
-    """Generate an expert level puzzle with minimal clues."""
-    return generate(clues=clues)
+def generate_expert(clues=22):
+    """Generate an expert level puzzle with minimal clues.
+    Note: Uses 22 clues instead of 20 to ensure faster generation."""
+    return generate(clues=clues, timeout=15)

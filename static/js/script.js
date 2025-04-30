@@ -265,22 +265,83 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: `difficulty=${difficulty}`,
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
             currentPuzzle = data.puzzle;
             currentSolution = data.solution;
             
             updateBoard(currentPuzzle);
+            
+            // Display a message if difficulty was changed as a fallback
+            if (data.message && data.difficulty !== difficulty) {
+                console.warn(data.message);
+                // Update the difficulty select to match what was actually generated
+                if (difficultySelect) {
+                    difficultySelect.value = data.difficulty;
+                }
+                // Show a message to the user
+                if (difficulty === 'expert') {
+                    alert("Expert puzzle generation took too long. Generated a hard puzzle instead.");
+                }
+            }
             
             // Hide spinner
             bearSpinner.style.display = 'none';
         })
         .catch(error => {
             console.error('Error generating puzzle:', error);
-            alert('Failed to generate puzzle. Please try again.');
             
-            // Hide spinner
-            bearSpinner.style.display = 'none';
+            // If we're trying to generate an expert puzzle, fall back to hard
+            if (difficulty === 'expert') {
+                console.warn('Expert generation failed, retrying with hard difficulty');
+                
+                // Try again with hard difficulty
+                fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'difficulty=hard',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.error) {
+                        currentPuzzle = data.puzzle;
+                        currentSolution = data.solution;
+                        updateBoard(currentPuzzle);
+                        
+                        // Update the UI to reflect the change
+                        if (difficultySelect) {
+                            difficultySelect.value = 'hard';
+                        }
+                        
+                        alert('Expert puzzle generation failed. Generated a hard puzzle instead.');
+                    } else {
+                        throw new Error('Fallback generation failed');
+                    }
+                })
+                .catch(fallbackError => {
+                    console.error('Fallback generation failed:', fallbackError);
+                    alert('Error generating puzzle. Please try again with a different difficulty.');
+                })
+                .finally(() => {
+                    // Hide bear spinner
+                    bearSpinner.style.display = 'none';
+                });
+            } else {
+                alert('Failed to generate puzzle. Please try again.');
+                // Hide spinner
+                bearSpinner.style.display = 'none';
+            }
         });
     });
     
